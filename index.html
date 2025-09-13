@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arpit Singh - Interactive Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6; /* Light gray */
+            --card-bg-color: #ffffff;
+            --text-color: #1f2937; /* Dark gray */
+            --text-muted-color: #4b5563; /* Medium gray */
+            --heading-color: #111827; /* Very dark gray */
+            --accent-color: #10b981; /* Emerald */
+            --accent-hover-color: #059669;
+            --border-color: #e5e7eb;
+        }
+
+        html.dark {
+            --bg-color: #111827; /* Dark blue-gray */
+            --card-bg-color: #1f2937; /* Dark gray */
+            --text-color: #d1d5db; /* Light gray */
+            --text-muted-color: #9ca3af; /* Medium gray */
+            --heading-color: #ffffff;
+            --accent-color: #34d399; /* Lighter Emerald */
+            --accent-hover-color: #10b981;
+            --border-color: #374151;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Applying theme variables to elements */
+        .bg-card { background-color: var(--card-bg-color); }
+        .text-main { color: var(--text-color); }
+        .text-muted { color: var(--text-muted-color); }
+        .text-heading { color: var(--heading-color); }
+        .text-accent { color: var(--accent-color); }
+        .border-themed { border-color: var(--border-color); }
+        .bg-accent { background-color: var(--accent-color); }
+        .bg-accent-hover:hover { background-color: var(--accent-hover-color); }
+
+        .timeline-card::before {
+            content: '';
+            position: absolute;
+            top: 1.25rem;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            transition: border-color 0.3s ease;
+        }
+        .timeline-item:not(.flex-row-reverse) .timeline-card::before {
+            left: -15px;
+            border-width: 8px 16px 8px 0;
+            border-color: transparent var(--card-bg-color) transparent transparent;
+        }
+        .timeline-item.flex-row-reverse .timeline-card::before {
+            right: -15px;
+            border-width: 8px 0 8px 16px;
+            border-color: transparent transparent transparent var(--card-bg-color);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cert-card { opacity: 0; }
+        .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+
+        /* --- Button Animations --- */
+        @keyframes button-glow {
+            0%, 100% { box-shadow: 0 0 5px var(--accent-color), 0 0 10px var(--accent-color); }
+            50% { box-shadow: 0 0 20px var(--accent-color), 0 0 30px var(--accent-color); }
+        }
+
+        @keyframes jiggle {
+            0%, 100% { transform: rotate(-3deg) scale(1.25); }
+            50% { transform: rotate(3deg) scale(1.25); }
+        }
+        
+        .animated-contact-button {
+            position: relative;
+            background-size: 200% auto;
+            background-image: linear-gradient(to right, var(--accent-color) 0%, var(--accent-hover-color) 50%, var(--accent-color) 100%);
+            animation: button-glow 3s infinite ease-in-out;
+            transition: background-position 0.5s;
+        }
+
+        .animated-contact-button:hover {
+            background-position: right center;
+        }
+
+        .social-icon:hover {
+            animation: jiggle 0.4s ease-in-out;
+        }
+
+        .theme-icon-spin {
+            transform: rotate(360deg);
+            transition: transform 0.5s ease-in-out;
+        }
+
+        /* --- New "Get in Touch" Styles --- */
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .aurora-bg {
+            background: linear-gradient(-45deg, rgba(22, 163, 74, 0.1), rgba(6, 182, 212, 0.1), rgba(5, 150, 105, 0.1), rgba(13, 148, 136, 0.1));
+            background-size: 400% 400%;
+            animation: aurora 15s ease infinite;
+        }
+
+        html.dark .aurora-bg {
+             background: linear-gradient(-45deg, rgba(52, 211, 153, 0.05), rgba(45, 212, 191, 0.05), rgba(16, 185, 129, 0.05), rgba(20, 184, 166, 0.05));
+             background-size: 400% 400%;
+             animation: aurora 15s ease infinite;
+        }
+
+        /* --- Stylish Counter Styles --- */
+        @keyframes pulse-light {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 5px rgba(16, 185, 129, 0.3); }
+            50% { transform: scale(1.05); text-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
+        }
+        .stat-card [data-target] {
+            /* Bouncy transition for the reveal */
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s;
+        }
+        .stat-card:hover [data-target]:not(.revealed) {
+            /* Pulse animation on hover to entice a click */
+            animation: pulse-light 2s infinite;
+        }
+
+        /* --- Plus Icon for Counter --- */
+        @keyframes plus-glow {
+            0%, 100% { text-shadow: 0 0 6px var(--accent-color), 0 0 12px var(--accent-color); }
+            50% { text-shadow: 0 0 18px var(--accent-color), 0 0 30px var(--accent-color); }
+        }
+        .plus-icon {
+            display: inline-block;
+            margin-left: 0.1em;
+            animation: plus-glow 2.5s infinite ease-in-out;
+        }
+        
+        /* --- Timeline Animation --- */
+        #timeline-container .timeline-line {
+            height: 0;
+            transition: height 2s ease-out;
+        }
+        #timeline-container.in-view .timeline-line {
+            height: 100%;
+        }
+        
+    </style>
+</head>
+<body class="text-gray-800">
+    <canvas id="particle-canvas"></canvas>
+
+    <header class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+             <div class="text-2xl font-bold text-accent">
+                AS
+            </div>
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#summary" class="text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 transition duration-300 font-medium">Summary</a>
+                <a href="#skills" class="text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 transition duration-300 font-medium">Skills</a>
+                <a href="#experience" class="text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 transition duration-300 font-medium">Experience</a>
+                <a href="#contact" class="animated-contact-button text-white px-5 py-2 rounded-full shadow-sm hover:shadow-lg">Contact</a>
+                <button id="theme-toggle" class="w-10 h-10 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+            <div class="md:hidden flex items-center">
+                 <button id="theme-toggle-mobile" class="w-10 h-10 mr-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center">
+                    <!-- Icons will be duplicated by JS -->
+                </button>
+                <button id="mobile-menu-button" class="text-gray-700 dark:text-gray-300 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+             <a href="#summary" class="block py-2 text-gray-600 dark:text-gray-300 hover:text-emerald-500">Summary</a>
+            <a href="#skills" class="block py-2 text-gray-600 dark:text-gray-300 hover:text-emerald-500">Skills</a>
+            <a href="#experience" class="block py-2 text-gray-600 dark:text-gray-300 hover:text-emerald-500">Experience</a>
+            <a href="#contact" class="block mt-2 text-center animated-contact-button text-white px-4 py-2 rounded-full">Contact</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 relative z-10">
+        <!-- ... existing sections ... -->
+        <section id="hero" class="text-center py-16 md:py-24">
+            <h1 class="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 pb-3">Arpit Singh</h1>
+            <p class="text-xl md:text-2xl text-muted mt-4">Community Manager & Blockchain Enthusiast</p>
+        </section>
+
+        <section id="summary" class="py-16">
+             <div class="max-w-4xl mx-auto bg-card p-8 md:p-10 rounded-2xl shadow-lg border border-themed">
+                <h2 class="text-3xl font-bold text-center mb-6 text-heading">Professional Summary</h2>
+                <p class="text-lg text-main leading-relaxed text-center">
+                    Community Manager & Blockchain Enthusiast with hands-on experience in Web3 projects, community growth, and ecosystem engagement. Skilled in managing Discord/Telegram communities, organizing campaigns, and creating content to foster user retention. Certified in blockchain fundamentals with strong problem-solving and leadership abilities.
+                </p>
+            </div>
+        </section>
+        
+        <section class="py-16 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="stat-card bg-card p-8 rounded-2xl shadow-lg border border-themed transform hover:scale-105 transition-transform duration-300 text-center cursor-pointer">
+                <h3 class="text-2xl font-bold mb-4 text-heading">Total Users</h3>
+                <p class="text-muted mb-4">Managed the Nodepay AI global community of over:</p>
+                <div id="total-user-count" class="text-6xl md:text-7xl font-bold text-accent" data-target="1800000">?</div>
+                <p class="text-muted mt-2">Nodepay Users</p>
+            </div>
+            <div class="stat-card bg-card p-8 rounded-2xl shadow-lg border border-themed transform hover:scale-105 transition-transform duration-300 text-center cursor-pointer">
+                <h3 class="text-2xl font-bold mb-4 text-heading">Discord Community</h3>
+                <p class="text-muted mb-4">Fostered a vibrant community for Nodepay AI with over:</p>
+                <div id="discord-user-count" class="text-6xl md:text-7xl font-bold text-accent" data-target="300000">?</div>
+                <p class="text-muted mt-2">Discord Members</p>
+            </div>
+            <div class="stat-card bg-card p-8 rounded-2xl shadow-lg border border-themed transform hover:scale-105 transition-transform duration-300 text-center cursor-pointer">
+                <h3 class="text-2xl font-bold mb-4 text-heading">Community Growth</h3>
+                <p class="text-muted mb-4">Grew Groovy Republic's Discord community to over:</p>
+                <div id="groovy-count" class="text-6xl md:text-7xl font-bold text-accent" data-target="50000">?</div>
+                <p class="text-muted mt-2">Users</p>
+            </div>
+            <div class="stat-card bg-card p-8 rounded-2xl shadow-lg border border-themed transform hover:scale-105 transition-transform duration-300 text-center cursor-pointer">
+                <h3 class="text-2xl font-bold mb-4 text-heading">Organic Reach</h3>
+                <p class="text-muted mb-4">Scaled Twitter pages organically to over:</p>
+                <div id="follower-count" class="text-6xl md:text-7xl font-bold text-accent" data-target="15000">?</div>
+                <p class="text-muted mt-2">Followers</p>
+            </div>
+        </section>
+
+        <section id="skills" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-12 text-heading">Core Competencies</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                 <div class="bg-card p-6 rounded-xl shadow-md text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-themed">
+                    <div class="text-5xl text-accent mb-3">🤝</div>
+                    <h3 class="font-semibold text-main">Community Management</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-md text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-themed">
+                    <div class="text-5xl text-accent mb-3">🔗</div>
+                    <h3 class="font-semibold text-main">Web3 & Blockchain</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-md text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-themed">
+                    <div class="text-5xl text-accent mb-3">📈</div>
+                    <h3 class="font-semibold text-main">Market Analysis</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-md text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-themed">
+                    <div class="text-5xl text-accent mb-3">🗓️</div>
+                    <h3 class="font-semibold text-main">Event Coordination</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-md text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-themed">
+                    <div class="text-5xl text-accent mb-3">✍️</div>
+                    <h3 class="font-semibold text-main">Content Creation</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-md text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-themed">
+                    <div class="text-5xl text-accent mb-3">👥</div>
+                    <h3 class="font-semibold text-main">Team Leadership</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-md text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-themed">
+                    <div class="text-5xl text-accent mb-3">🌐</div>
+                    <h3 class="font-semibold text-main">Social Media Strategy</h3>
+                </div>
+                <div class="bg-card p-6 rounded-xl shadow-md text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-themed">
+                    <div class="text-5xl text-accent mb-3">💡</div>
+                    <h3 class="font-semibold text-main">User Support & Retention</h3>
+                </div>
+            </div>
+        </section>
+
+        <section id="certifications" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-12 text-heading">Certifications & Achievements</h2>
+            <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="cert-card bg-card p-6 rounded-xl shadow-md border border-themed flex items-center space-x-4 hover:shadow-xl hover:bg-accent group transition-all duration-300 transform hover:scale-105">
+                    <div class="text-4xl">🏅</div>
+                    <div><h3 class="font-semibold text-main group-hover:text-white transition-colors">Introduction to Blockchain</h3></div>
+                </div>
+                <div class="cert-card bg-card p-6 rounded-xl shadow-md border border-themed flex items-center space-x-4 hover:shadow-xl hover:bg-accent group transition-all duration-300 transform hover:scale-105">
+                    <div class="text-4xl">💸</div>
+                    <div><h3 class="font-semibold text-main group-hover:text-white transition-colors">Transacting on the Blockchain</h3></div>
+                </div>
+                <div class="cert-card bg-card p-6 rounded-xl shadow-md border border-themed flex items-center space-x-4 hover:shadow-xl hover:bg-accent group transition-all duration-300 transform hover:scale-105">
+                    <div class="text-4xl">💼</div>
+                    <div><h3 class="font-semibold text-main group-hover:text-white transition-colors">Blockchain and Business</h3></div>
+                </div>
+                <div class="cert-card bg-card p-6 rounded-xl shadow-md border border-themed flex items-center space-x-4 hover:shadow-xl hover:bg-accent group transition-all duration-300 transform hover:scale-105">
+                    <div class="text-4xl">🔍</div>
+                    <div><h3 class="font-semibold text-main group-hover:text-white transition-colors">Blockchain Opportunity Analysis</h3></div>
+                </div>
+                <div class="cert-card bg-card p-6 rounded-xl shadow-md border border-themed flex items-center space-x-4 hover:shadow-xl hover:bg-accent group transition-all duration-300 transform hover:scale-105">
+                    <div class="text-4xl">🚀</div>
+                    <div><h3 class="font-semibold text-main group-hover:text-white transition-colors">IDE Bootcamp</h3></div>
+                </div>
+                 <div class="cert-card bg-card p-6 rounded-xl shadow-md border border-themed flex items-center space-x-4 hover:shadow-xl hover:bg-accent group transition-all duration-300 transform hover:scale-105">
+                    <div class="text-4xl">💻</div>
+                    <div><h3 class="font-semibold text-main group-hover:text-white transition-colors">Tech Quest AFS</h3></div>
+                </div>
+                <div class="cert-card bg-card p-6 rounded-xl shadow-md border border-themed flex items-center space-x-4 hover:shadow-xl hover:bg-accent group transition-all duration-300 transform hover:scale-105 col-span-1 md:col-span-2 lg:col-span-1 lg:col-start-2">
+                    <div class="text-4xl">🏆</div>
+                     <div><h3 class="font-semibold text-main group-hover:text-white transition-colors">Young Entrepreneur of the Year</h3></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience" class="py-16">
+            <h2 class="text-3xl font-bold text-center mb-4 text-heading">Professional Experience</h2>
+            <p class="text-center max-w-3xl mx-auto text-muted mb-12">Click on any role in the timeline below to see more details about my responsibilities and achievements.</p>
+            <div id="timeline-container" class="relative max-w-4xl mx-auto"></div>
+        </section>
+        
+        <section id="contact" class="py-16 text-center bg-card rounded-2xl shadow-lg border border-themed relative overflow-hidden">
+            <div class="aurora-bg absolute top-0 left-0 w-full h-full z-0"></div>
+            <div class="relative z-10 px-4">
+                <h2 class="text-3xl font-bold mb-4 text-heading">Get In Touch</h2>
+                <p class="text-muted mb-8 max-w-xl mx-auto">I'm always open to discussing new projects, creative ideas, or opportunities. Let's connect!</p>
+                
+                <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Email Card -->
+                    <a href="mailto:workingcode869@gmail.com" class="p-6 bg-card/50 backdrop-blur-sm rounded-xl border border-themed hover:bg-accent group transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl flex flex-col items-center justify-center">
+                        <svg class="w-10 h-10 mb-3 text-accent group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        <h3 class="font-bold text-lg text-heading group-hover:text-white transition-colors">Email Me</h3>
+                        <p class="text-sm text-muted group-hover:text-emerald-200 transition-colors">workingcode869@gmail.com</p>
+                    </a>
+
+                    <!-- Socials Card -->
+                    <div class="p-6 bg-card/50 backdrop-blur-sm rounded-xl border border-themed hover:bg-accent group transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl flex flex-col items-center justify-center">
+                        <svg class="w-10 h-10 mb-3 text-accent group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <h3 class="font-bold text-lg text-heading group-hover:text-white transition-colors">Find Me On Socials</h3>
+                        <div class="flex justify-center space-x-5 mt-3">
+                            <a href="https://x.com/Maureen_869" target="_blank" rel="noopener noreferrer" class="social-icon text-muted group-hover:text-white transition-transform duration-300 transform hover:scale-125">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            </a>
+                            <a href="https://t.me/Maureen_869" target="_blank" rel="noopener noreferrer" class="social-icon text-muted group-hover:text-white transition-transform duration-300 transform hover:scale-125">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.51.7l-4.24-3.13-2.05 1.97c-.24.23-.44.42-.8.42z"/></svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Discord Card -->
+                    <div id="discord-card" class="p-6 bg-card/50 backdrop-blur-sm rounded-xl border border-themed hover:bg-accent group transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl flex flex-col items-center justify-center cursor-pointer">
+                        <svg class="w-10 h-10 mb-3 text-accent group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 28 21"><path d="M23.021 1.738a.13.13 0 0 0-.14-.016C20.398 2.895 18.06 3.82 15.72 4.032a.123.123 0 0 0-.11.133c.28 1.372.56 3.124.56 3.208 0 .04-.02.085-.05.105-1.15.65-2.43 1.05-3.79 1.05s-2.64-.4-3.79-1.05a.133.133 0 0 0-.05-.105c0-.084.28-1.836.56-3.208a.123.123 0 0 0-.11-.133c-2.34-.212-4.678-1.137-7.162-2.31a.13.13 0 0 0-.14.016 21.503 21.503 0 0 0-4.48 11.592a.115.115 0 0 0 .02.085c2.47 2.217 5.23 3.633 8.1 4.192a.12.12 0 0 0 .12-.056c.63-1.026 1.18-2.124 1.62-3.28a.124.124 0 0 0-.06-.153c-1.05-.59-2.03-1.25-2.9-2.02a.134.134 0 0 1 .02-.222c.39-.24.77-.48 1.14-.72a.123.123 0 0 1 .13-.008c.5.34 1 .68 1.5 1.02a.122.122 0 0 0 .12 0c.5-.34 1-.68 1.5-1.02a.123.123 0 0 1 .13.008c.37.24.75.48 1.14.72a.134.134 0 0 1 .02.222c-.87.77-1.85 1.43-2.9 2.02a.124.124 0 0 0-.06.153c.44 1.156.99 2.254 1.62 3.28a.12.12 0 0 0 .12.056c2.87-.56 5.63-1.975 8.1-4.192a.115.115 0 0 0 .02-.085c.34-4.144-1.39-8.43-4.48-11.592zM9.972 12.3c-1.21 0-2.19-1.12-2.19-2.5s.98-2.5 2.19-2.5 2.19 1.12 2.19 2.5-.98 2.5-2.19 2.5zm7.98 0c-1.21 0-2.19-1.12-2.19-2.5s.98-2.5 2.19-2.5 2.19 1.12 2.19 2.5-.98 2.5-2.19 2.5z"></path></svg>
+                        <h3 class="font-bold text-lg text-heading group-hover:text-white transition-colors">Discord</h3>
+                        <p id="discord-username" class="text-sm text-muted group-hover:text-emerald-200 transition-colors">EVERMAUREEN</p>
+                        <span id="copy-feedback" class="absolute bottom-3 text-xs text-white opacity-0 transition-opacity">Copied!</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="text-center py-6 text-muted">
+        <p>&copy; 2024 Arpit Singh. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- THEME TOGGLE SCRIPT ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleMobileBtn = document.getElementById('theme-toggle-mobile');
+            const darkIcon = document.getElementById('theme-toggle-dark-icon');
+            const lightIcon = document.getElementById('theme-toggle-light-icon');
+            
+            // Clone icons for mobile button
+            themeToggleMobileBtn.appendChild(darkIcon.cloneNode(true));
+            themeToggleMobileBtn.appendChild(lightIcon.cloneNode(true));
+
+
+            const updateIcons = () => {
+                const icons = [darkIcon, lightIcon, themeToggleMobileBtn.children[0], themeToggleMobileBtn.children[1]];
+                icons.forEach(icon => icon.classList.remove('theme-icon-spin'));
+
+                if (document.documentElement.classList.contains('dark')) {
+                    lightIcon.classList.remove('hidden');
+                    darkIcon.classList.add('hidden');
+                    themeToggleMobileBtn.children[0].classList.add('hidden');
+                    themeToggleMobileBtn.children[1].classList.remove('hidden');
+                    void lightIcon.offsetWidth; // Trigger reflow
+                    lightIcon.classList.add('theme-icon-spin');
+                    themeToggleMobileBtn.children[1].classList.add('theme-icon-spin');
+
+                } else {
+                    lightIcon.classList.add('hidden');
+                    darkIcon.classList.remove('hidden');
+                    themeToggleMobileBtn.children[0].classList.remove('hidden');
+                    themeToggleMobileBtn.children[1].classList.add('hidden');
+                    void darkIcon.offsetWidth; // Trigger reflow
+                    darkIcon.classList.add('theme-icon-spin');
+                    themeToggleMobileBtn.children[0].classList.add('theme-icon-spin');
+                }
+            };
+            
+            // Set initial theme
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateIcons();
+
+            const toggleTheme = () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+                updateIcons();
+                // Update particle colors on theme change
+                if (window.updateAnimationColors) {
+                    window.updateAnimationColors();
+                }
+            };
+
+            themeToggleBtn.addEventListener('click', toggleTheme);
+            themeToggleMobileBtn.addEventListener('click', toggleTheme);
+
+
+            // --- CRYPTO RAIN ANIMATION SCRIPT ---
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const cryptoSymbols = ['₿', 'Ξ', '⟠', 'Ł', '◈', '$'];
+
+            const getCssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+            let particleColor;
+
+            window.updateAnimationColors = () => {
+                particleColor = getCssVar('--accent-color');
+            };
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 20 + 10;
+                    this.speed = Math.random() * 1.5 + 0.5;
+                    this.char = cryptoSymbols[Math.floor(Math.random() * cryptoSymbols.length)];
+                }
+                update() {
+                    this.y += this.speed;
+                    if (this.y > canvas.height + this.size) {
+                        this.y = 0 - this.size;
+                        this.x = Math.random() * canvas.width;
+                        this.speed = Math.random() * 1.5 + 0.5;
+                    }
+                }
+                draw() {
+                    ctx.fillStyle = particleColor;
+                    ctx.font = `${this.size}px Arial`;
+                    ctx.fillText(this.char, this.x, this.y);
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                let numberOfParticles = (canvas.width * canvas.height) / 18000;
+                for (let i = 0; i < numberOfParticles; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                }
+            }
+
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                initParticles();
+            });
+            
+            // Initial setup
+            resizeCanvas();
+            updateAnimationColors();
+            initParticles();
+            animate();
+            
+            // --- Mobile Menu Toggle ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // --- ANIMATED COUNTERS SCRIPT ---
+            const countUp = (el) => {
+                const target = +el.dataset.target;
+                const duration = 2000;
+                const frameRate = 1000 / 60;
+                const totalFrames = Math.round(duration / frameRate);
+                let frame = 0;
+                
+                el.innerText = '0'; 
+                
+                const counter = setInterval(() => {
+                    frame++;
+                    const progress = frame / totalFrames;
+                    const current = Math.round(target * progress);
+                    el.textContent = current.toLocaleString();
+
+                    if (frame === totalFrames) {
+                        clearInterval(counter);
+                        
+                        if (el.id === 'total-user-count' || el.id === 'discord-user-count') {
+                            let currentCount = target;
+                            el.innerHTML = `${currentCount.toLocaleString()}<span class="plus-icon">+</span>`;
+
+                            setInterval(() => {
+                                const increment = el.id === 'total-user-count' ? Math.floor(Math.random() * 12) + 1 : Math.floor(Math.random() * 5) + 1;
+                                currentCount += increment;
+                                el.innerHTML = `${currentCount.toLocaleString()}<span class="plus-icon">+</span>`;
+                            }, 1500);
+                        } else {
+                            el.textContent = target.toLocaleString(); 
+                        }
+                    }
+                }, frameRate);
+            };
+
+            document.querySelectorAll('.stat-card').forEach(card => {
+                const counterEl = card.querySelector('[data-target]');
+                if (counterEl) {
+                    card.addEventListener('click', () => {
+                        if (counterEl.classList.contains('revealed')) return;
+                        counterEl.classList.add('revealed');
+                        
+                        counterEl.style.transform = 'scale(0)';
+                        counterEl.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                           counterEl.style.transform = 'scale(1)';
+                           counterEl.style.opacity = '1';
+                           countUp(counterEl);
+                        }, 150);
+                        
+                    }, { once: true });
+                }
+            });
+
+
+            // --- EXPERIENCE TIMELINE SCRIPT ---
+             const experienceData = [
+                {
+                    role: "Community Manager",
+                    company: "Nodepay Al",
+                    period: "Dec 2024 - Present",
+                    details: [
+                        "Manage and support a global community of 300K+ users across Discord, Telegram, and social platforms.",
+                        "Lead communication efforts, handle escalations, and ensure smooth onboarding for users.",
+                        "Coordinate with product and tech teams to resolve community issues and improve user engagement.",
+                        "Support marketing campaigns, events, and incentive programs to increase user participation.",
+                        "Recognized for being approachable, solution-oriented, and maintaining strong community trust."
+                    ]
+                },
+                {
+                    role: "Community Moderator & Contributor",
+                    company: "Groovy Republic",
+                    period: "Feb 2022 - July 2024",
+                    details: [
+                        "Assisted in growing Discord community from 5K to 50K users.",
+                        "Supported AMA sessions, content moderation, and onboarding new users.",
+                        "Engaged in grassroots marketing strategies to boost project visibility."
+                    ]
+                },
+                {
+                    role: "Twitter & Collaboration Manager - Freelance",
+                    company: "Various NFT projects",
+                    period: "2021-2023",
+                    details: [
+                        "Managed 20+ NFT project launches, optimizing Discord & Twitter presence.",
+                        "Scaled Twitter pages organically from 0 to 15k+ followers.",
+                        "Implemented spam-reduction systems improving onboarding by 70%."
+                    ]
+                }
+            ];
+
+            const timelineContainer = document.getElementById('timeline-container');
+            
+            const createTimelineItem = (item) => {
+                const detailsHtml = item.details.map(d => `<li class="text-main/90 group-hover:text-emerald-100 transition-colors">${d}</li>`).join('');
+                const itemEl = document.createElement('div');
+                itemEl.className = 'timeline-item mb-8 flex justify-between items-center w-full';
+                itemEl.innerHTML = `
+                    <div class="order-1 w-5/12"></div>
+                    <div class="z-20 flex items-center order-1 bg-accent shadow-xl w-8 h-8 rounded-full">
+                        <div class="mx-auto font-semibold text-lg text-white"></div>
+                    </div>
+                    <div class="order-1 bg-card rounded-lg shadow-xl w-5/12 px-6 py-4 cursor-pointer timeline-card border border-themed relative hover:bg-accent group transition-all duration-300 transform hover:scale-105">
+                        <h3 class="font-bold text-heading group-hover:text-white transition-colors text-lg">${item.role}</h3>
+                        <p class="text-sm font-medium text-accent group-hover:text-white transition-colors">${item.company} <span class="font-normal text-muted group-hover:text-emerald-200 transition-colors">| ${item.period}</span></p>
+                        <div class="timeline-details max-h-0 overflow-hidden transition-all duration-500 ease-in-out mt-3">
+                            <ul class="list-disc list-inside space-y-1">
+                                ${detailsHtml}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                return itemEl;
+            };
+
+            const renderTimeline = () => {
+                if (!timelineContainer) return;
+                timelineContainer.innerHTML = '<div class="timeline-line absolute border-l-2 border-dashed border-gray-300 dark:border-gray-600 h-full left-1/2 -translate-x-1/2 top-0"></div>';
+                
+                experienceData.forEach((item, index) => {
+                    const timelineItem = createTimelineItem(item);
+                    if (index % 2 !== 0) {
+                        timelineItem.classList.add('flex-row-reverse');
+                    }
+                    timelineContainer.appendChild(timelineItem);
+                });
+                
+                document.querySelectorAll('.timeline-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const details = card.querySelector('.timeline-details');
+                        if (details.style.maxHeight && details.style.maxHeight !== '0px') {
+                            details.style.maxHeight = '0px';
+                        } else {
+                            details.style.maxHeight = details.scrollHeight + "px";
+                        }
+                    });
+                });
+            };
+
+            renderTimeline();
+
+            // --- INTERSECTION OBSERVER FOR ANIMATIONS ---
+            const observerOptions = {
+                threshold: 0.1,
+            };
+
+            const observerCallback = (entries, observer) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        // Handle Certificate fade-in
+                        if (entry.target.classList.contains('cert-card')) {
+                            setTimeout(() => {
+                                entry.target.classList.add('fade-in-up');
+                            }, index * 100);
+                        }
+                        
+                        // Handle Timeline line draw
+                        if (entry.target.id === 'timeline-container') {
+                            entry.target.classList.add('in-view');
+                        }
+
+                        observer.unobserve(entry.target);
+                    }
+                });
+            };
+
+            const animationObserver = new IntersectionObserver(observerCallback, observerOptions);
+
+            document.querySelectorAll('.cert-card').forEach(card => {
+                animationObserver.observe(card);
+            });
+            if (timelineContainer) {
+                animationObserver.observe(timelineContainer);
+            }
+
+
+            // --- DISCORD CARD SCRIPT ---
+            const discordCard = document.getElementById('discord-card');
+            const discordUsername = document.getElementById('discord-username');
+            const copyFeedback = document.getElementById('copy-feedback');
+
+            if(discordCard) {
+                discordCard.addEventListener('click', () => {
+                    navigator.clipboard.writeText(discordUsername.innerText).then(() => {
+                        copyFeedback.style.opacity = '1';
+                        setTimeout(() => {
+                            copyFeedback.style.opacity = '0';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy text: ', err);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
